@@ -26,8 +26,7 @@ app.use("/api", webhookRoutes);
         console.log("Seeded admin: admin@example.com / admin123");
     }
 
-    await bot.launch();
-    console.log("Bot launched");
+    bot.launch().then(() => console.log("Bot launched")).catch(console.error);
 
     const port = Number(process.env.PORT) || 8080;
     app.listen(port, () => console.log("API listening on", port));
