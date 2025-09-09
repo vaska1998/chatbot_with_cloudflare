@@ -1,17 +1,32 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { getClientIp } from "../utils/ip.js";
-import { bot } from "../bot.js";
+import {Telegraf} from "telegraf";
 
-const router = Router();
+export class WebhookRoutes {
+    private readonly router: Router;
+    private bot: Telegraf;
 
-router.all("/notify", async (req, res) => {
-    const ip = getClientIp(req);
-    const allowedChatId = Number(process.env.TG_ALLOWED_CHAT_ID);
-    await bot.telegram.sendMessage(
-        allowedChatId,
-        `HTTP ${req.method} ${req.originalUrl}\nIP: ${ip}\nBody: ${JSON.stringify(req.body).slice(0, 2000)}`
-    );
-    res.json({ ok: true });
-});
+    constructor(bot: Telegraf, router: Router) {
+        this.router = router
+        this.bot = bot;
+        this.registerRoutes()
+    }
 
-export default router;
+    private registerRoutes() {
+        this.router.all("/notify", this.notify.bind(this))
+    }
+
+    private async notify(req: Request, res: Response) {
+        const ip = getClientIp(req);
+        const allowedChatId = Number(process.env.TG_ALLOWED_CHAT_ID)
+        await this.bot.telegram.sendMessage(
+            allowedChatId,
+            `HTTP ${req.method} ${req.originalUrl}\nIP: ${ip}\nBody: ${JSON.stringify(req.body).slice(0, 2000)}`
+        );
+        res.json({ ok: true });
+    }
+
+    public getRouter(): Router {
+        return this.router;
+    }
+}

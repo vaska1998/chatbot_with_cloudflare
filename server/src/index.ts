@@ -1,19 +1,15 @@
 import "dotenv/config";
-import express from "express";
+import express, {Router} from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import { bot } from "./bot.js";
-import adminRoutes from "./routes/admin.js";
-import userRoutes from "./routes/users.js";
-import webhookRoutes from "./routes/webhook.js";
+import {TelegramBot} from "./bot";
+import {WebhookRoutes} from "./routes/webhook";
+import {UserRoutes} from "./routes/users";
+import {AdminRoutes} from "./routes/admin";
 
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") || true }));
-
-app.use("/api/auth", adminRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api", webhookRoutes);
 
 (async () => {
     await mongoose.connect(process.env.MONGO_URI!);
@@ -26,7 +22,13 @@ app.use("/api", webhookRoutes);
         console.log(`Seeded admin: ${process.env.ADMIN_EMAIL!} / ${process.env.ADMIN_PASS!}`);
     }
 
-    bot.launch().then(() => console.log("Bot launched")).catch(console.error);
+    const bot = new TelegramBot(process.env.TG_BOT_TOKEN!, process.env.CF_API_TOKEN!);
+    bot.launch()
+
+    const router = Router();
+    app.use("/api/auth", new AdminRoutes(router).getRouter());
+    app.use("/api/users", new UserRoutes(router).getRouter());
+    app.use("/api", new WebhookRoutes(bot['bot'], router).getRouter());
 
     const port = Number(process.env.PORT) || 8080;
     app.listen(port, () => console.log("API listening on", port));
@@ -34,6 +36,3 @@ app.use("/api", webhookRoutes);
     console.error(e);
     process.exit(1);
 });
-
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));

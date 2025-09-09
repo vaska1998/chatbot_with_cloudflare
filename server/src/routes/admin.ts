@@ -1,20 +1,37 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-const router = Router();
+export class AdminRoutes {
+    private readonly router: Router;
 
-router.post("/login", async (req, res) => {
-    const { email, password } = req.body || {};
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: "Invalid creds" });
+    constructor(router: Router) {
+        this.router = router
+        this.registerRoutes()
+    }
 
-    const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ error: "Invalid creds" });
+    private registerRoutes() {
+        this.router.post("/login", this.login.bind(this))
+    }
 
-    const token = jwt.sign({ sub: user.id, email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
-    res.json({ token });
-});
+    private async login(req: Request, res: Response) {
+        const { email, password } = req.body || {};
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ error: "Invalid creds" });
+        }
 
-export default router;
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) {
+            return res.status(401).json({ error: "Invalid creds" });
+        }
+
+        const token = jwt.sign({ sub: user.id, email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+        res.json({ token });
+    }
+
+    public getRouter(): Router {
+        return this.router;
+    }
+}
