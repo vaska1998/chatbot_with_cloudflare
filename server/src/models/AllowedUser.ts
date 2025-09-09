@@ -13,6 +13,6 @@ const allowedUserSchema = new Schema<IAllowedUser>({
 });
 
 const AllowedUser: Model<IAllowedUser> =
-    mongoose.model<IAllowedUser>("AllowedUser", allowedUserSchema);
+    mongoose.models.AllowedUser || mongoose.model<IAllowedUser>("AllowedUser", allowedUserSchema);
 
 export default AllowedUser
