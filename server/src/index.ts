@@ -21,9 +21,9 @@ app.use("/api", webhookRoutes);
     const count = await User.countDocuments();
     if (count === 0) {
         const bcrypt = (await import("bcrypt")).default;
-        const passwordHash = await bcrypt.hash("admin123", 10);
-        await User.create({ email: "admin@example.com", passwordHash });
-        console.log("Seeded admin: admin@example.com / admin123");
+        const passwordHash = await bcrypt.hash(process.env.ADMIN_PASS!, 10);
+        await User.create({ email: process.env.ADMIN_EMAIL!, passwordHash });
+        console.log(`Seeded admin: ${process.env.ADMIN_EMAIL!} / ${process.env.ADMIN_PASS!}`);
     }
 
     bot.launch().then(() => console.log("Bot launched")).catch(console.error);
