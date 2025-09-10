@@ -42,7 +42,7 @@ const Login = () => {
     return (
         <Container maxWidth="sm" sx={{ mt: 8 }}>
             <Paper sx={{ p: 4 }}>
-                <Typography>Admin Login</Typography>
+                <Typography><Typography.Title>Admin Login</Typography.Title></Typography>
                 <Form onFinish={submit}>
                     <Form.Item>
                         <Stack spacing={2}>
