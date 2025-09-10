@@ -39,6 +39,7 @@ export class TelegramBot {
             ].join("\n"));
         });
 
+        // registration new domain only for paid accounts
         this.bot.command("register_new_domain", async (ctx) => {
             const parts = ctx.message!.text.split(/\s+/);
             if (parts.length < 8) {
