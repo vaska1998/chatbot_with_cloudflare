@@ -9,6 +9,20 @@ export type DnsRecordPayload = {
     proxied?: boolean;
 };
 
+export type DomainsProps = {
+    name: string;
+    auto_renew: boolean;
+    registration: {
+        first_name: string,
+        last_name: string,
+        email: string,
+        address: string,
+        city: string,
+        country: string,
+        zip: string
+    }
+}
+
 export class CloudflareClient {
     private cf: AxiosInstance;
 
@@ -22,39 +36,66 @@ export class CloudflareClient {
         });
     }
 
+    async registrarNewDomain(content: DomainsProps) {
+        const { data } = await this.cf.post("/accounts/registrar/domains", content);
+        if (!data.success) {
+            throw new Error(JSON.stringify(data.errors));
+        }
+
+        return data.result.name_servers;
+    }
+
     async createZone(domain: string) {
         const { data } = await this.cf.post("/zones", { name: domain, jump_start: false });
-        if (!data.success) throw new Error(JSON.stringify(data.errors));
+        if (!data.success) {
+            throw new Error(JSON.stringify(data.errors));
+        }
+
         return data.result;
     }
 
     async getZoneByName(domain: string) {
         const { data } = await this.cf.get("/zones", { params: { name: domain, status: "active" } });
-        if (!data.success) throw new Error(JSON.stringify(data.errors));
+        if (!data.success) {
+            throw new Error(JSON.stringify(data.errors));
+        }
+
         return data.result[0];
     }
 
     async listDns(zoneId: string) {
         const { data } = await this.cf.get(`/zones/${zoneId}/dns_records`);
-        if (!data.success) throw new Error(JSON.stringify(data.errors));
+        if (!data.success) {
+            throw new Error(JSON.stringify(data.errors));
+        }
+
         return data.result;
     }
 
     async createDns(zoneId: string, payload: DnsRecordPayload) {
         const { data } = await this.cf.post(`/zones/${zoneId}/dns_records`, payload);
-        if (!data.success) throw new Error(JSON.stringify(data.errors));
+        if (!data.success) {
+            throw new Error(JSON.stringify(data.errors));
+        }
+
         return data.result;
     }
 
     async updateDns(zoneId: string, recordId: string, payload: Partial<DnsRecordPayload>) {
         const { data } = await this.cf.put(`/zones/${zoneId}/dns_records/${recordId}`, payload);
-        if (!data.success) throw new Error(JSON.stringify(data.errors));
+        if (!data.success) {
+            throw new Error(JSON.stringify(data.errors));
+        }
+
         return data.result;
     }
 
     async deleteDns(zoneId: string, recordId: string) {
         const { data } = await this.cf.delete(`/zones/${zoneId}/dns_records/${recordId}`);
-        if (!data.success) throw new Error(JSON.stringify(data.errors));
+        if (!data.success) {
+            throw new Error(JSON.stringify(data.errors));
+        }
+
         return data.result;
     }
 }
