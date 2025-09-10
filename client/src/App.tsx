@@ -2,10 +2,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 import {AppUserProvider, useAppUser} from "./contexts/user.context";
-import {AuthCredentialsWithClaims, parseTokenClaims} from "./tools/token";
+import {AuthCredentialsWithClaims, parseTokenCredentials} from "./tools/token";
 import {createClientManager} from "./infrastructure/client/manager";
 import {AxiosProxy} from "./infrastructure/client/proxy/axios.proxy";
 import React from "react";
+import {getCookie} from "./tools/cookie";
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthorized } = useAppUser();
@@ -13,16 +14,11 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 export default function App() {
-    const token = localStorage.getItem('token');
-    const user: AuthCredentialsWithClaims | null = token
-    ? {
-            accessToken: token, 
-            refreshToken: token,
-            claims: parseTokenClaims(token)
-    }
-    : null;
-    
-    const client = createClientManager(new AxiosProxy(process.env.REACT_APP_PUBLIC_API_URL ?? '', token ?? ''));
+    const cookieJson = getCookie('vd_credentials');
+    const user: AuthCredentialsWithClaims | null = parseTokenCredentials(cookieJson);
+    const client = createClientManager(
+        new AxiosProxy(process.env.REACT_APP_PUBLIC_API_URL ?? '', user?.accessToken ?? '')
+    );
     
     return (
         <AppUserProvider user={user} client={client}>
