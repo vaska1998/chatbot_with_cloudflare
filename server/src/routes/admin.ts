@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import {AuthDto, AuthSchema, LoginResponse} from "../dto/auth.dto";
+import {validateBody} from "../middlewares/validator";
 
 export class AdminRoutes {
     private readonly router: Router;
@@ -12,10 +14,10 @@ export class AdminRoutes {
     }
 
     private registerRoutes() {
-        this.router.post("/login", this.login.bind(this))
+        this.router.post("/login", validateBody(AuthSchema), this.login.bind(this))
     }
 
-    private async login(req: Request, res: Response) {
+    private async login(req: Request<AuthDto>, res: Response<LoginResponse>) {
         const { email, password } = req.body || {};
         const user = await User.findOne({ email });
         if (!user) {
