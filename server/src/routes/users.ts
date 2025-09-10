@@ -36,7 +36,7 @@ export class UserRoutes {
 
     private async deleteAllowedUser(req: Request, res: Response) {
         await AllowedUser.deleteOne({ telegramId: Number(req.params.telegramId) });
-        res.json({ ok: true });
+        res.json({ telegramId: req.params.telegramId });
     }
 
     public getRouter(): Router {

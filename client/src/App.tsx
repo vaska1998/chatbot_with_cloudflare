@@ -1,26 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Users from "./pages/Users";
+import {AppUserProvider, useAppUser} from "./contexts/user.context";
+import {AuthCredentialsWithClaims, parseTokenClaims} from "./tools/token";
+import {createClientManager} from "./infrastructure/client/manager";
+import {AxiosProxy} from "./infrastructure/client/proxy/axios.proxy";
+import React from "react";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isAuthorized } = useAppUser();
+    return isAuthorized ? <>{children}</> : <Navigate to="/login" replace/>;
+};
+
+export default function App() {
+    const token = localStorage.getItem('token');
+    const user: AuthCredentialsWithClaims | null = token
+    ? {
+            accessToken: token, 
+            refreshToken: token,
+            claims: parseTokenClaims(token)
+    }
+    : null;
+    
+    const client = createClientManager(new AxiosProxy(process.env.REACT_APP_PUBLIC_API_URL ?? '', token ?? ''));
+    
+    return (
+        <AppUserProvider user={user} client={client}>
+            <Router>
+                <Routes>
+                    <Route path="/login" element={<Login/>} />
+                    <Route
+                        path={"/users"}
+                        element={
+                        <PrivateRoute>
+                            <Users/>
+                        </PrivateRoute>
+                        }
+                    />
+                    <Route path="*" element={<Navigate to="/users" replace/> }/>
+                </Routes>
+            </Router>
+        </AppUserProvider>
+    );
 }
 
-export default App;
