@@ -158,7 +158,7 @@ export class TelegramBot {
         this.bot.command("dns_update", async (ctx) => {
             const [, domain, recordId, ...jsonParts] = ctx.message!.text.split(/\s+/);
             if (!domain || !recordId || jsonParts.length === 0) {
-                return ctx.reply("Example: /dns_update example.com 12345 '{\"name\":\"api\",\"content\":\"1.1.1.1\"}'");
+                return ctx.reply("Example: /dns_update example.com 12345 {\"name\":\"api\",\"content\":\"1.1.1.1\"}");
             }
 
             try {
@@ -167,7 +167,7 @@ export class TelegramBot {
                     return ctx.reply("Zone not found.");
                 }
 
-                const payload = JSON.parse(jsonParts.join(" "));
+                const payload = JSON.parse(jsonParts[0]);
                 const result = await this.cfClient.updateDns(zone.id, recordId, payload);
                 await ctx.reply(`Updated: ${result.id} ${result.type} ${result.name} -> ${result.content}`);
             } catch (e: any) {
@@ -188,7 +188,7 @@ export class TelegramBot {
                 }
 
                 await this.cfClient.deleteDns(zone.id, recordId);
-                await ctx.reply("Deleted.");
+                await ctx.reply("Deleted");
             } catch (e: any) {
                 await ctx.reply(`Error: ${e.message || e}`);
             }

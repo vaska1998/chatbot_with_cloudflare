@@ -55,12 +55,17 @@ export class CloudflareClient {
     }
 
     async getZoneByName(domain: string) {
-        const { data } = await this.cf.get("/zones", { params: { name: domain, status: "active" } });
+        const { data } = await this.cf.get("/zones" );
         if (!data.success) {
             throw new Error(JSON.stringify(data.errors));
         }
 
-        return data.result[0];
+        const zone = data.result.find((z: any) => z.name === domain);
+        if (!zone) {
+            throw new Error(`Zone ${domain} not found`);
+        }
+
+        return zone;
     }
 
     async listDns(zoneId: string) {
