@@ -68,7 +68,7 @@ export class TelegramBot {
                     `Add the following NS records at your current registrar:\n${nameServers.join("\n")}`
                 );
             } catch (e: any) {
-                await ctx.reply(`Error registering domain: ${e.message || e}`);
+                await ctx.reply(`Error: ${e.response?.data?.errors?.[0]?.message || e.response?.data?.message || e.message || e}`);
             }
 
         })
@@ -84,7 +84,7 @@ export class TelegramBot {
                 const ns = zone.name_servers || zone.nameservers || [];
                 await ctx.reply(`The zone is created. NS:\n${ns.join("\n")}`);
             } catch (e: any) {
-                await ctx.reply(`Error: ${e.message  || e}`);
+                await ctx.reply(`Error: ${e.response?.data?.errors?.[0]?.message || e.response?.data?.message || e.message || e}`);
             }
         });
 
@@ -103,7 +103,7 @@ export class TelegramBot {
                 const ns = zone.name_servers || zone.nameservers || [];
                 await ctx.reply(`NS для ${domain}:\n${ns.join("\n")}`);
             } catch (e: any) {
-                await ctx.reply(`Error: ${e.message || e}`);
+                await ctx.reply(`Error: ${e.response?.data?.errors?.[0]?.message || e.response?.data?.message || e.message || e}`);
             }
         });
 
@@ -123,7 +123,7 @@ export class TelegramBot {
                 await ctx.reply(`DNS records (${recs.length}):\n` +
                     recs.map((r: any) => `${r.id} ${r.type} ${r.name} -> ${r.content}`).join("\n"));
             } catch (e: any) {
-                await ctx.reply(`Error: ${e.message || e}`);
+                await ctx.reply(`Error: ${e.response?.data?.errors?.[0]?.message || e.response?.data?.message || e.message || e}`);
             }
         });
 
@@ -152,7 +152,7 @@ export class TelegramBot {
                 const result = await this.cfClient.createDns(zone.id, payload);
                 await ctx.reply(`Created: ${result.id} ${result.type} ${result.name} -> ${result.content}`);
             } catch (e: any) {
-                await ctx.reply(`Error: ${e.message || e}`);
+                await ctx.reply(`Error: ${e.response?.data?.errors?.[0]?.message || e.response?.data?.message || e.message || e}`);
             }
         });
 
@@ -172,7 +172,7 @@ export class TelegramBot {
                 const result = await this.cfClient.updateDns(zone.id, recordId, payload);
                 await ctx.reply(`Updated: ${result.id} ${result.type} ${result.name} -> ${result.content}`);
             } catch (e: any) {
-                await ctx.reply(`Error: ${e.message || e}`);
+                await ctx.reply(`Error: ${e.response?.data?.errors?.[0]?.message || e.response?.data?.message || e.message || e}`);
             }
         });
 
@@ -191,7 +191,7 @@ export class TelegramBot {
                 await this.cfClient.deleteDns(zone.id, recordId);
                 await ctx.reply("Deleted");
             } catch (e: any) {
-                await ctx.reply(`Error: ${e.message || e}`);
+                await ctx.reply(`Error: ${e.response?.data?.errors?.[0]?.message || e.response?.data?.message || e.message || e}`);
             }
         });
     }
