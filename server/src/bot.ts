@@ -9,10 +9,12 @@ type DnsType = (typeof validTypes)[number];
 export class TelegramBot {
     private bot: Telegraf;
     private cfClient: CloudflareClient;
+    private readonly cfApiAccountId: string;
 
-    constructor(token: string, cfApiToken: string) {
+    constructor(token: string, cfApiToken: string, cfApiAccountId: string) {
         this.bot = new Telegraf(token);
         this.cfClient = new CloudflareClient(cfApiToken);
+        this.cfApiAccountId = cfApiAccountId;
         this.bot.use(chatGuard);
         this.registerCommands();
     }
@@ -37,10 +39,10 @@ export class TelegramBot {
             ].join("\n"));
         });
 
-        this.bot.command("register_domain", async (ctx) => {
+        this.bot.command("register_new_domain", async (ctx) => {
             const parts = ctx.message!.text.split(/\s+/);
             if (parts.length < 8) {
-                return ctx.reply("Usage: /register_domain <domain> <first_name> <last_name> <email> <city> <country> <zip>");
+                return ctx.reply("Usage: /register_new_domain <domain> <first_name> <last_name> <email> <city> <country> <zip>");
             }
 
             const [, domain, first_name, last_name, email, city, country, zip] = parts;
@@ -70,18 +72,18 @@ export class TelegramBot {
 
         })
 
-        this.bot.command("create_zone", async (ctx) => {
+        this.bot.command("onboard_domain", async (ctx) => {
             const [, domain] = ctx.message!.text.split(/\s+/);
             if (!domain) {
-                return ctx.reply("Specify the domain: /create_zone example.com");
+                return ctx.reply("Specify the domain: /onboard_domain example.com");
             }
 
             try {
-                const zone = await this.cfClient.createZone(domain);
+                const zone = await this.cfClient.onboardDomain(domain, this.cfApiAccountId);
                 const ns = zone.name_servers || zone.nameservers || [];
                 await ctx.reply(`The zone is created. NS:\n${ns.join("\n")}`);
             } catch (e: any) {
-                await ctx.reply(`Error: ${e.message || e}`);
+                await ctx.reply(`Error: ${e.message  || e}`);
             }
         });
 

@@ -22,7 +22,7 @@ app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") || true }));
         console.log(`Seeded admin: ${process.env.ADMIN_EMAIL!} / ${process.env.ADMIN_PASS!}`);
     }
 
-    const bot = new TelegramBot(process.env.TG_BOT_TOKEN!, process.env.CF_API_TOKEN!);
+    const bot = new TelegramBot(process.env.TG_BOT_TOKEN!, process.env.CF_API_TOKEN!, process.env.CF_ACCOUNT_ID!);
     bot.launch()
 
     const router = Router();

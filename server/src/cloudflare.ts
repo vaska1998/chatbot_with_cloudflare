@@ -45,8 +45,8 @@ export class CloudflareClient {
         return data.result.name_servers;
     }
 
-    async createZone(domain: string) {
-        const { data } = await this.cf.post("/zones", { name: domain, jump_start: false });
+    async onboardDomain(domain: string, accountId: string) {
+        const { data } = await this.cf.post("/zones", { name: domain, account: {"id": accountId}, jump_start: true });
         if (!data.success) {
             throw new Error(JSON.stringify(data.errors));
         }
